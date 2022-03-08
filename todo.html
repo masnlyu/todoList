@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Todo 範例製作</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./bootstrap-5.1.3/css/bootstrap.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <meta charset="UTF-8">
+
+</head>
+
+<body class="bg-info">
+  <div class="container m-auto" style="padding-top: 5%;">
+    <div class="row">
+      <div class="col-md-8 m-auto ">
+        <div id="app">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">待辦事項</span>
+            </div>
+            <input type="text" class="form-control" placeholder="準備要做的任務" v-model="newTodo" @keyup.enter="addTodo">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button" @click="addTodo">新增</button>
+            </div>
+          </div>
+          <div class="card text-center">
+            <div class="card-header">
+              <!-- 分頁過濾 -->
+              <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                  <a class="nav-link " :class="{'active' : visibility == 'all'}" href="#"
+                    @click.prevent="visibility = 'all'">全部</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link " :class="{'active' : visibility == 'ing'}" href="#"
+                    @click.prevent="visibility = 'ing'">進行中</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link " :class="{'active' : visibility =='completed'}" href="#"
+                    @click.prevent="visibility = 'completed'">已完成</a>
+                </li>
+              </ul>
+              <!-- 分頁過濾 -->
+            </div>
+            <!-- 列表顯示 -->
+            <ul class="list-group list-group-flush text-left">
+              <li class="list-group-item" v-for="(item,index) in filteredTodos" @dblclick="editTodo(item)">
+                <div class="d-flex " v-if="item.id !== cacheTodo.id" style="align-items: center;">
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" :id="item.id" v-model="item.completed">
+                    <label class="form-check-label " :for="item.id" :class="{'completed':item.completed}">
+                      {{item.title}}
+                    </label>
+                  </div>
+                  <div style="margin-left: auto;">
+                    <button @click="editTodo(item)" type="button" class="btn btn-primary">編輯</button>
+                    <button @click="removeTodo(item)" type="button" class="btn btn-danger">刪除</button>
+                  </div>
+                </div>
+                <div class="input-group" v-if="item.id === cacheTodo.id">
+                  <input type="text" class="form-control mx-1" placeholder="請輸入內容" aria-label="Username"
+                    aria-describedby="basic-addon1" v-model="cacheTitle" @keyup.esc="cancelEdit()"
+                    @keyup.enter="doneEdit(item)" style="display: inline-block;">
+                  <div>
+                    <button @click="doneEdit(item)" type="button" class="btn btn-primary">確定</button>
+                    <button @click="cancelEdit()" type="button" class="btn btn-secondary">取消</button>
+                  </div>
+                </div>
+
+              </li>
+            </ul>
+            <!-- 列表顯示 -->
+            <div class="card-footer d-flex justify-content-between">
+              <span>還有 {{undonTodo}} 筆任務未完成</span>
+              <a href="#" @click.prevent="deleteAll">清除所有任務</a>
+            </div>
+          </div>
+
+
+          <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            &times;
+          </button>
+          Modal
+          <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="staticBackdropLabel" aria-hidden="true"  v-for="(item,index) in filteredTodos">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" >
+                  {{filteredTodos}}
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" @click="removeTodo(filteredTodos)">確定</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                </div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+
+        <script>
+          var app = new Vue({
+            el: '#app',
+            data: {
+              newTodo: "",
+              todos: [
+                {
+                  id: "1",
+                  title: "代辦事項清單",
+                  completed: false,
+                }
+              ],
+              cacheTodo: {},
+              cacheTitle: "",
+              visibility: "all"
+            },
+            methods: {
+              addTodo: function () {
+                // .trim()去除頭尾的空格
+                var value = this.newTodo.trim();
+                // Math.floor(Date.now())目前時間轉換的數字
+                var timestamp = Math.floor(Date.now());
+                // 如果value是空值立即退出function，不做動作
+                if (!value) {
+                  return;
+                }
+                // .push新增一筆資料
+                this.todos.push({
+                  id: timestamp,
+                  title: value,
+                  completed: false
+                });
+                // 再將欄位清空
+                this.newTodo = ""
+              },
+              //splice(x,y) 刪除某資料 x從哪一筆資料 y刪除幾筆
+              removeTodo: function (todo) {
+                var newIndex = "";
+                var vm = this;
+                vm.todos.forEach(function (item, index) {
+                  if (todo.id === item.id) {
+                    newIndex = index
+                  }
+                })
+                this.todos.splice(newIndex, 1)
+              },
+              editTodo: function (item) {
+                console.log(item);
+                this.cacheTodo = item;
+                this.cacheTitle = item.title;
+              },
+              cancelEdit: function () {
+                this.cacheTodo = {};
+              },
+              doneEdit: function (item) {
+                item.title = this.cacheTitle;
+                this.cacheTitle = "";
+                this.cacheTodo = {};
+              },
+              deleteAll: function () {
+                this.todos = [];
+              }
+            },
+            computed: {
+              //過濾器事項
+              filteredTodos: function () {
+                if (this.visibility == "all") {
+                  return this.todos;
+                }
+                else if (this.visibility == "ing") {
+                  var ingTodos = [];
+                  this.todos.forEach(function (item) {
+                    if (!item.completed) {
+                      ingTodos.push(item);
+                    }
+                  })
+                  return ingTodos;
+                }
+                else if (this.visibility == "completed") {
+                  var completedTodos = [];
+                  this.todos.forEach(function (item) {
+                    if (item.completed) {
+                      completedTodos.push(item);
+                    }
+                  })
+                  return completedTodos;
+                }
+              },
+              undonTodo: function () {
+                let Todolen = [];
+                this.todos.forEach(function (item) {
+                  if (item.completed === false) {
+                    Todolen.push(item)
+                  }
+                })
+                return Todolen.length;
+              }
+            },
+          })
+        </script>
+
+        <style>
+          .completed {
+            text-decoration: line-through
+          }
+        </style>
+
+      </div>
+    </div>
+  </div>
+
+
+  <script src="./bootstrap-5.1.3/js/bootstrap.bundle.js"></script>
+</body>
+
+</html>
