@@ -10,12 +10,15 @@
 
 </head>
 
-<body class="bg-info">
+<body class="bg-info" style="font-family: Comic Sans MS;">
   <div class="container m-auto" style="padding-top: 5%;">
     <div class="row">
-      <div class="col-md-8 m-auto ">
+      <div class="col-md-6 m-auto p-2 rounded" style="background-color: rgba(255, 255, 255, 75%);">
+        <div class="text-center text-decoration-underline text-capitalize fst-italic " style="font-family:Brush Script MT, Brush Script Std, cursive">
+          <h1>Todo List</h1>
+        </div>
         <div id="app">
-          <div class="input-group mb-3">
+          <div class="input-group mb-1">
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">待辦事項</span>
             </div>
@@ -112,7 +115,16 @@
                   id: "1",
                   title: "代辦事項清單",
                   completed: false,
-                }
+                },
+                {
+                  id: "2",
+                  title: "Note",
+                  completed: false,
+                },{
+                  id: "3",
+                  title: "Meeting",
+                  completed: false,
+                },
               ],
               cacheTodo: {},
               cacheTitle: "",
